@@ -3,6 +3,7 @@ import OpportunityCard from '../components/OpportunityCard';
 import Button from '../components/Button';
 import FeaturedOpportunities from '../components/FeaturedOpportunities';
 import VolunteerCategories from '../components/VolunteerCategories';
+import LocationMap from '../components/LocationMap';
 import { Link } from 'react-router-dom';
 
 const successStories = [
@@ -67,6 +68,13 @@ export default function Home() {
 
       {/* Featured Opportunities */}
       <FeaturedOpportunities />
+
+      {/* Location Map Section */}
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <LocationMap />
+        </div>
+      </section>
 
       {/* Impact Stats */}
       <div className="bg-blue-600 py-16">
