@@ -1,19 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { FaCalendar, FaBell, FaMapMarkerAlt, FaUsers, FaFilter, FaHeart } from 'react-icons/fa';
 import { toast } from 'react-hot-toast';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 interface Event {
   _id: string;
   title: string;
-  type: 'charity' | 'cleanliness' | 'disaster-relief';
+  type: string;
   date: string;
   time: string;
   location: string;
   description: string;
-  participants: number;
+  participants: number | any[];
   imageUrl: string;
   isRegistered: boolean;
   notificationEnabled: boolean;
+  organizer?: any;
 }
 
 const sampleEvents: Event[] = [
@@ -146,16 +149,21 @@ const sampleEvents: Event[] = [
 ];
 
 const Events: React.FC = () => {
+  const { token, user } = useAuth();
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const [events, setEvents] = useState<Event[]>(sampleEvents); // Initialize with sample events
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [showRegistration, setShowRegistration] = useState(false);
+  const [notificationStatus, setNotificationStatus] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    fetchEvents();
-  }, []);
+    if (token) {
+      fetchEvents();
+      fetchNotificationPreferences();
+    }
+  }, [token, user]);
 
   const fetchEvents = async () => {
     try {
@@ -165,9 +173,29 @@ const Events: React.FC = () => {
         throw new Error('Failed to fetch events');
       }
       const data = await response.json();
-      if (data.success && data.data.length > 0) {
-        // console.log("bsdvuvbdbniodnbibnimn");
-        setEvents(data.data);
+      
+      if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+        console.log('Fetched events:', data.data);
+        
+        // Transform the API response to match our Event interface
+        const transformedEvents = data.data.map((event: any) => {
+          // Check if the current user is registered for this event
+          const isUserRegistered = user && Array.isArray(event.participants) && 
+            event.participants.some((p: any) => {
+              const participantId = typeof p === 'string' ? p : p._id;
+              return participantId === user._id;
+            });
+          
+          return {
+            ...event,
+            participants: Array.isArray(event.participants) ? event.participants.length : 
+                         (typeof event.participants === 'number' ? event.participants : 0),
+            isRegistered: isUserRegistered || false,
+            notificationEnabled: notificationStatus[event._id] || false
+          };
+        });
+        
+        setEvents(transformedEvents);
       } else {
         console.log('Using sample events as fallback');
       }
@@ -179,61 +207,124 @@ const Events: React.FC = () => {
     }
   };
 
-  const handleNotificationToggle = async (eventId: string) => {
+  const fetchNotificationPreferences = async () => {
+    if (!token || !user) return;
+    
     try {
-      const response = await fetch('/api/events/notifications', {
+      const response = await fetch('http://localhost:5000/api/users/notification-preferences', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.preferences) {
+          const preferences: Record<string, boolean> = {};
+          data.preferences.forEach((pref: any) => {
+            preferences[pref.eventId] = true;
+          });
+          setNotificationStatus(preferences);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching notification preferences:', error);
+    }
+  };
+
+  const handleNotificationToggle = async (eventId: string) => {
+    if (!token || !user) {
+      toast.error('Please sign in to enable notifications');
+      return;
+    }
+    
+    try {
+      // Optimistically update UI
+      const newStatus = !notificationStatus[eventId];
+      setNotificationStatus(prev => ({
+        ...prev,
+        [eventId]: newStatus
+      }));
+      
+      // Update events state to reflect notification change
+      setEvents(events.map(event =>
+        event._id === eventId
+          ? { ...event, notificationEnabled: newStatus }
+          : event
+      ));
+      
+      // Send request to backend
+      const response = await fetch('http://localhost:5000/api/users/notification-preferences', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ eventId }),
+        body: JSON.stringify({ 
+          eventId,
+          enabled: newStatus
+        }),
       });
 
-      if (!response.ok) throw new Error('Failed to toggle notification');
+      if (!response.ok) {
+        // Revert changes if request fails
+        setNotificationStatus(prev => ({
+          ...prev,
+          [eventId]: !newStatus
+        }));
+        
+        setEvents(events.map(event =>
+          event._id === eventId
+            ? { ...event, notificationEnabled: !newStatus }
+            : event
+        ));
+        
+        throw new Error('Failed to update notification preference');
+      }
 
-      setEvents(events.map(event =>
-        event._id === eventId
-          ? { ...event, notificationEnabled: !event.notificationEnabled }
-          : event
-      ));
-
-      toast.success('Notification preference updated');
+      toast.success(newStatus ? 'Notifications enabled' : 'Notifications disabled');
     } catch (error) {
-      toast.error('Failed to update notification preference');
       console.error('Notification toggle error:', error);
+      toast.error('Failed to update notification preference');
     }
   };
 
   const handleRegistration = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!selectedEvent) return;
+    
+    if (!token || !user) {
+      toast.error('Please sign in to register for events');
+      return;
+    }
 
     const formData = new FormData(e.currentTarget);
     const registrationData = {
       eventId: selectedEvent._id,
-      fullName: formData.get('fullName'),
-      email: formData.get('email'),
-      phone: formData.get('phone'),
+      fullName: formData.get('fullName') || user.name,
+      email: formData.get('email') || user.email,
+      phone: formData.get('phone') || '',
     };
 
     try {
-      const response = await fetch('/api/events/register', {
+      const response = await fetch(`http://localhost:5000/api/events/register`, {
         method: 'POST',
         headers: {
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(registrationData),
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Registration failed');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Registration failed');
       }
 
       // Update local state
       setEvents(events.map(event =>
         event._id === selectedEvent._id
-          ? { ...event, isRegistered: true, participants: event.participants + 1 }
+          ? { ...event, isRegistered: true, participants: typeof event.participants === 'number' ? event.participants + 1 : 1 }
           : event
       ));
 
@@ -242,6 +333,40 @@ const Events: React.FC = () => {
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to register');
       console.error('Registration error:', error);
+    }
+  };
+
+  const handleUnregister = async (eventId: string) => {
+    if (!token || !user) {
+      toast.error('Please sign in to unregister from events');
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:5000/api/events/${eventId}/unregister`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Unregistration failed');
+      }
+
+      // Update local state
+      setEvents(events.map(event =>
+        event._id === eventId
+          ? { ...event, isRegistered: false, participants: typeof event.participants === 'number' ? event.participants - 1 : 0 }
+          : event
+      ));
+
+      toast.success('Successfully unregistered from the event');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to unregister');
+      console.error('Unregistration error:', error);
     }
   };
 
@@ -254,71 +379,162 @@ const Events: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
-      {/* Header Section */}
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">Upcoming Events</h1>
-        <p className="text-lg text-gray-600 mb-8">
-          Join us in making a difference in our community
-        </p>
-
-        {/* Search and Filter Section */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-8">
-          <div className="flex-1">
-            <input
-              type="text"
-              placeholder="Search events..."
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          <div className="flex gap-2 flex-wrap">
-            <button
-              className={`px-4 py-2 rounded-lg flex items-center gap-2 ${
-                activeFilter === 'all'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-gray-700 border border-gray-300'
-              }`}
-              onClick={() => setActiveFilter('all')}
-            >
-              <FaFilter /> All
-            </button>
-            <button
-              className={`px-4 py-2 rounded-lg flex items-center gap-2 ${
-                activeFilter === 'charity'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-gray-700 border border-gray-300'
-              }`}
-              onClick={() => setActiveFilter('charity')}
-            >
-              <FaHeart /> Charity
-            </button>
-            <button
-              className={`px-4 py-2 rounded-lg flex items-center gap-2 ${
-                activeFilter === 'cleanliness'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-gray-700 border border-gray-300'
-              }`}
-              onClick={() => setActiveFilter('cleanliness')}
-            >
-              <FaUsers /> Cleanliness
-            </button>
-            <button
-              className={`px-4 py-2 rounded-lg flex items-center gap-2 ${
-                activeFilter === 'disaster-relief'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-gray-700 border border-gray-300'
-              }`}
-              onClick={() => setActiveFilter('disaster-relief')}
-            >
-              <FaUsers /> Disaster Relief
-            </button>
-          </div>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Upcoming Events</h1>
+          <p className="mt-1 text-gray-600">Join events and make a difference in your community</p>
         </div>
+        
+        <div className="flex gap-2 mt-4 md:mt-0">
+          {user?.userType === 'volunteer' && (
+            <>
+              <Link
+                to="/my-events"
+                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                My Registered Events
+              </Link>
+              
+              <button
+                onClick={async () => {
+                  if (!token) {
+                    toast.error('Please sign in to request weekly digest');
+                    return;
+                  }
+                  
+                  try {
+                    const response = await fetch('http://localhost:5000/api/notifications/request-digest', {
+                      method: 'POST',
+                      headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                      }
+                    });
+                    
+                    if (!response.ok) {
+                      throw new Error('Failed to request weekly digest');
+                    }
+                    
+                    const data = await response.json();
+                    toast.success(data.message || 'Weekly digest requested successfully');
+                  } catch (error) {
+                    console.error('Error requesting digest:', error);
+                    toast.error('Failed to request weekly digest');
+                  }
+                }}
+                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+              >
+                Get Weekly Digest
+              </button>
+              
+              <button
+                onClick={async () => {
+                  if (!token) {
+                    toast.error('Please sign in to request today\'s reminders');
+                    return;
+                  }
+                  
+                  try {
+                    const response = await fetch('http://localhost:5000/api/notifications/request-today-reminders', {
+                      method: 'POST',
+                      headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                      }
+                    });
+                    
+                    if (!response.ok) {
+                      throw new Error('Failed to request today\'s reminders');
+                    }
+                    
+                    const data = await response.json();
+                    toast.success(data.message || 'Today\'s reminders requested successfully');
+                  } catch (error) {
+                    console.error('Error requesting reminders:', error);
+                    toast.error('Failed to request today\'s reminders');
+                  }
+                }}
+                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+              >
+                Today's Reminders
+              </button>
+            </>
+          )}
+          
+          {user?.userType === 'ngo' && (
+            <Link
+              to="/events/create"
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              Create Event
+            </Link>
+          )}
+        </div>
+      </div>
 
-        {/* Events Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {events
+      {/* Search and Filter Section */}
+      <div className="flex flex-col sm:flex-row gap-4 mb-8">
+        <div className="flex-1">
+          <input
+            type="text"
+            placeholder="Search events..."
+            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <div className="flex gap-2 flex-wrap">
+          <button
+            className={`px-4 py-2 rounded-lg flex items-center gap-2 ${
+              activeFilter === 'all'
+                ? 'bg-blue-600 text-white'
+                : 'bg-white text-gray-700 border border-gray-300'
+            }`}
+            onClick={() => setActiveFilter('all')}
+          >
+            <FaFilter /> All
+          </button>
+          <button
+            className={`px-4 py-2 rounded-lg flex items-center gap-2 ${
+              activeFilter === 'charity'
+                ? 'bg-blue-600 text-white'
+                : 'bg-white text-gray-700 border border-gray-300'
+            }`}
+            onClick={() => setActiveFilter('charity')}
+          >
+            <FaHeart /> Charity
+          </button>
+          <button
+            className={`px-4 py-2 rounded-lg flex items-center gap-2 ${
+              activeFilter === 'cleanliness'
+                ? 'bg-blue-600 text-white'
+                : 'bg-white text-gray-700 border border-gray-300'
+            }`}
+            onClick={() => setActiveFilter('cleanliness')}
+          >
+            <FaUsers /> Cleanliness
+          </button>
+          <button
+            className={`px-4 py-2 rounded-lg flex items-center gap-2 ${
+              activeFilter === 'disaster-relief'
+                ? 'bg-blue-600 text-white'
+                : 'bg-white text-gray-700 border border-gray-300'
+            }`}
+            onClick={() => setActiveFilter('disaster-relief')}
+          >
+            <FaUsers /> Disaster Relief
+          </button>
+        </div>
+      </div>
+
+      {/* Events Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {events.length === 0 ? (
+          <div className="col-span-3 text-center py-12">
+            <p className="text-gray-500 text-lg">No events found. Please check back later.</p>
+          </div>
+        ) : (
+          events
             .filter(
               (event) =>
                 (activeFilter === 'all' || event.type === activeFilter) &&
@@ -332,19 +548,25 @@ const Events: React.FC = () => {
                 className="bg-white rounded-xl shadow-lg overflow-hidden transform transition-all duration-300 hover:scale-105"
               >
                 <div className="relative">
-                  <img
-                    src={event.imageUrl}
-                    alt={event.title}
-                    className="w-full h-48 object-cover"
-                  />
+                  <Link to={`/events/${event._id}`}>
+                    <img
+                      src={event.imageUrl}
+                      alt={event.title}
+                      className="w-full h-48 object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1469571486292-0ba58a3f068b';
+                      }}
+                    />
+                  </Link>
                   <div className="absolute top-4 right-4">
                     <button
                       onClick={() => handleNotificationToggle(event._id)}
                       className={`p-2 rounded-full transition-colors duration-200 ${
-                        event.notificationEnabled
+                        notificationStatus[event._id] || event.notificationEnabled
                           ? 'bg-blue-600 text-white'
                           : 'bg-white text-gray-600'
                       }`}
+                      title={notificationStatus[event._id] || event.notificationEnabled ? "Disable notifications" : "Enable notifications"}
                     >
                       <FaBell />
                     </button>
@@ -359,9 +581,11 @@ const Events: React.FC = () => {
                     </span>
                   </div>
 
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    {event.title}
-                  </h3>
+                  <Link to={`/events/${event._id}`} className="block">
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2 hover:text-blue-600 transition-colors">
+                      {event.title}
+                    </h3>
+                  </Link>
 
                   <div className="flex items-center gap-2 text-gray-600 mb-4">
                     <FaMapMarkerAlt />
@@ -373,27 +597,54 @@ const Events: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-gray-600">
                       <FaUsers />
-                      <span>{event.participants} participants</span>
+                      <span>
+                        {typeof event.participants === 'number' 
+                          ? event.participants 
+                          : Array.isArray(event.participants) 
+                            ? (event.participants as any[]).length 
+                            : 0} participants
+                      </span>
                     </div>
 
-                    <button
-                      onClick={() => {
-                        setSelectedEvent(event);
-                        setShowRegistration(true);
-                      }}
-                      className={`px-6 py-2 rounded-lg transition-colors duration-200 ${
-                        event.isRegistered
-                          ? 'bg-green-600 text-white'
-                          : 'bg-blue-600 text-white hover:bg-blue-700'
-                      }`}
-                    >
-                      {event.isRegistered ? 'Registered' : 'Register Now'}
-                    </button>
+                    {event.isRegistered ? (
+                      <div className="flex gap-2">
+                        <button
+                          className="px-6 py-2 rounded-lg bg-green-600 text-white"
+                          disabled
+                        >
+                          Registered
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (window.confirm('Are you sure you want to unregister from this event?')) {
+                              handleUnregister(event._id);
+                            }
+                          }}
+                          className="px-3 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          if (!token) {
+                            toast.error('Please sign in to register for events');
+                            return;
+                          }
+                          setSelectedEvent(event);
+                          setShowRegistration(true);
+                        }}
+                        className="px-6 py-2 rounded-lg transition-colors duration-200 bg-blue-600 text-white hover:bg-blue-700"
+                      >
+                        Register Now
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
-            ))}
-        </div>
+            ))
+        )}
       </div>
 
       {/* Registration Modal */}
@@ -426,6 +677,7 @@ const Events: React.FC = () => {
                   type="text"
                   required
                   name="fullName"
+                  defaultValue={user?.name || ''}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -438,6 +690,7 @@ const Events: React.FC = () => {
                   type="email"
                   required
                   name="email"
+                  defaultValue={user?.email || ''}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>

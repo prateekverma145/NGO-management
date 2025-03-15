@@ -6,6 +6,17 @@ const donationSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
+  recipientId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+    description: 'The NGO receiving the donation'
+  },
+  recipientName: {
+    type: String,
+    required: true,
+    description: 'Name of the NGO receiving the donation'
+  },
   amount: {
     type: Number,
     required: true,

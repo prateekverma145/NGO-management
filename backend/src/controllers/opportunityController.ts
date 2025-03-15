@@ -6,12 +6,101 @@ import mongoose from 'mongoose';
 // Create new opportunity
 export const createOpportunity = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const opportunity = new Opportunity({
-      ...req.body,
+    // Check if user is an NGO
+    if (req.user.userType !== 'ngo') {
+      res.status(403).json({
+        success: false,
+        message: 'Only NGOs can create opportunities'
+      });
+      return;
+    }
+
+    // Debug: Log the request body and headers to see what's being received
+    console.log('Request body:', req.body);
+    console.log('Content-Type:', req.headers['content-type']);
+    console.log('Authorization:', req.headers['authorization'] ? 'Present' : 'Missing');
+    
+    // Extract and validate required fields
+    const { 
+      title, 
+      organization, 
+      location, 
+      date, 
+      image, 
+      category, 
+      volunteers, 
+      description, 
+      hoursPerWeek, 
+      deadline, 
+      impact 
+    } = req.body;
+
+    // Debug: Log each field individually
+    console.log('Field values:', {
+      title,
+      organization,
+      location,
+      date,
+      image,
+      category,
+      volunteers,
+      description,
+      hoursPerWeek,
+      deadline,
+      impact
+    });
+
+    // Create an object to track missing fields
+    const missingFields = {
+      title: !title,
+      organization: !organization,
+      location: !location,
+      date: !date,
+      image: !image,
+      category: !category,
+      volunteers: !volunteers,
+      description: !description,
+      hoursPerWeek: !hoursPerWeek,
+      deadline: !deadline,
+      impact: !impact
+    };
+
+    // Check if any required fields are missing
+    const hasMissingFields = Object.values(missingFields).some(value => value === true);
+    
+    if (hasMissingFields) {
+      console.log('Missing required fields:', missingFields);
+      
+      res.status(400).json({
+        success: false,
+        message: 'Missing required fields',
+        missingFields,
+        receivedData: req.body
+      });
+      return;
+    }
+
+    // Create the opportunity with explicit field assignment to ensure all fields are included
+    const opportunityData = {
+      title,
+      organization,
+      location,
+      date,
+      image,
+      category,
+      volunteers: Number(volunteers),
+      description,
+      hoursPerWeek: String(hoursPerWeek),
+      deadline: String(deadline),
+      impact: String(impact),
       createdBy: req.user._id,
       registeredVolunteers: [],
       status: 'open'
-    });
+    };
+
+    console.log('Creating opportunity with data:', opportunityData);
+
+    const opportunity = new Opportunity(opportunityData);
 
     await opportunity.save();
 
@@ -21,6 +110,29 @@ export const createOpportunity = async (req: AuthRequest, res: Response): Promis
     });
   } catch (error) {
     console.error('Error creating opportunity:', error);
+    
+    // Provide more detailed error messages for validation errors
+    if (error instanceof Error && error.name === 'ValidationError') {
+      const validationErrors = {};
+      
+      // @ts-ignore - Mongoose validation error structure
+      if (error.errors) {
+        // @ts-ignore - Mongoose validation error structure
+        Object.keys(error.errors).forEach(key => {
+          // @ts-ignore - Mongoose validation error structure
+          validationErrors[key] = error.errors[key].message;
+        });
+      }
+      
+      res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: validationErrors,
+        receivedData: req.body
+      });
+      return;
+    }
+    
     res.status(500).json({
       success: false,
       message: 'Error creating opportunity',
@@ -32,6 +144,15 @@ export const createOpportunity = async (req: AuthRequest, res: Response): Promis
 // Register for an opportunity
 export const registerForOpportunity = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    // Check if user is a volunteer
+    if (req.user.userType !== 'volunteer') {
+      res.status(403).json({
+        success: false,
+        message: 'Only volunteers can register for opportunities'
+      });
+      return;
+    }
+
     const opportunityId = req.params.id;
     const userId = new mongoose.Types.ObjectId(req.user._id);
 
@@ -50,6 +171,16 @@ export const registerForOpportunity = async (req: AuthRequest, res: Response): P
       res.status(400).json({
         success: false,
         message: 'This opportunity is no longer accepting volunteers'
+      });
+      return;
+    }
+
+    // Check if deadline has passed
+    const deadlineDate = new Date(opportunity.deadline);
+    if (deadlineDate < new Date()) {
+      res.status(400).json({
+        success: false,
+        message: 'Registration deadline has passed for this opportunity'
       });
       return;
     }
@@ -137,7 +268,13 @@ export const unregisterFromOpportunity = async (req: AuthRequest, res: Response)
 // Get all opportunities
 export const getAllOpportunities = async (req: Request, res: Response): Promise<void> => {
   try {
-    const opportunities = await Opportunity.find()
+    // Only show open opportunities with deadlines in the future
+    const currentDate = new Date();
+    
+    const opportunities = await Opportunity.find({
+      status: 'open',
+      deadline: { $gte: currentDate.toISOString().split('T')[0] } // Compare with YYYY-MM-DD format
+    })
       .populate('createdBy', 'name email organizationName')
       .populate('registeredVolunteers', 'name email')
       .sort({ createdAt: -1 });

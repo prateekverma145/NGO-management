@@ -95,12 +95,16 @@ const opportunitySchema = new mongoose.Schema({
 
 // Add virtual field for available spots
 opportunitySchema.virtual('availableSpots').get(function(this: IOpportunity) {
-  return this.volunteers - this.registeredVolunteers.length;
+  // Check if registeredVolunteers exists before accessing its length
+  const registeredCount = this.registeredVolunteers ? this.registeredVolunteers.length : 0;
+  return this.volunteers - registeredCount;
 });
 
 // Add method to check if opportunity is full
 opportunitySchema.methods.isFull = function(this: IOpportunity): boolean {
-  return this.registeredVolunteers.length >= this.volunteers;
+  // Check if registeredVolunteers exists before accessing its length
+  const registeredCount = this.registeredVolunteers ? this.registeredVolunteers.length : 0;
+  return registeredCount >= this.volunteers;
 };
 
 // Add method to register volunteer
@@ -112,7 +116,14 @@ opportunitySchema.methods.registerVolunteer = async function(
     return false;
   }
   
-  if (!this.registeredVolunteers.includes(userId)) {
+  // Initialize registeredVolunteers if it doesn't exist
+  if (!this.registeredVolunteers) {
+    this.registeredVolunteers = [];
+  }
+  
+  // Check if user is already registered
+  const isRegistered = this.registeredVolunteers.some(id => id.toString() === userId.toString());
+  if (!isRegistered) {
     this.registeredVolunteers.push(userId);
     if (this.registeredVolunteers.length >= this.volunteers) {
       this.status = 'closed';
@@ -128,7 +139,13 @@ opportunitySchema.methods.unregisterVolunteer = async function(
   this: IOpportunity,
   userId: mongoose.Types.ObjectId
 ): Promise<boolean> {
-  const index = this.registeredVolunteers.indexOf(userId);
+  // Initialize registeredVolunteers if it doesn't exist
+  if (!this.registeredVolunteers) {
+    this.registeredVolunteers = [];
+    return false;
+  }
+  
+  const index = this.registeredVolunteers.findIndex(id => id.toString() === userId.toString());
   if (index > -1) {
     this.registeredVolunteers.splice(index, 1);
     if (this.status === 'closed') {
