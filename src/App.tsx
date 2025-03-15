@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
@@ -27,12 +27,22 @@ import Footer from './components/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
+  // Initialize dark mode from localStorage or system preference
+  useEffect(() => {
+    const savedMode = localStorage.getItem('darkMode');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    if ((savedMode && savedMode === 'true') || (!savedMode && prefersDark)) {
+      document.documentElement.classList.add('dark');
+    }
+  }, []);
+
   return (
     <AuthProvider>
       <Router>
-        <div className="flex flex-col min-h-screen">
+        <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
           <Navbar />
-          <main className="flex-grow bg-gray-50">
+          <main className="flex-grow bg-gray-50 dark:bg-gray-900">
             <Routes>
               {/* Public Routes */}
               <Route path="/" element={<Home />} />
@@ -110,7 +120,17 @@ function App() {
           </main>
           <Footer />
         </div>
-        <Toaster position="top-right" />
+        <Toaster 
+          position="top-right" 
+          toastOptions={{
+            // Customize toast styles for dark mode
+            className: '',
+            style: {
+              background: 'var(--toast-bg)',
+              color: 'var(--toast-color)',
+            },
+          }}
+        />
       </Router>
     </AuthProvider>
   );

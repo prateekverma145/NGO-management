@@ -1,30 +1,39 @@
 import { Link } from 'react-router-dom';
-import { Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPin } from 'lucide-react';
+import { Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPin, Heart } from 'lucide-react';
 
-const Footer: React.FC = () => {
+export default function Footer() {
+  const currentYear = new Date().getFullYear();
+
   return (
-    <footer className="bg-gray-900 text-gray-300">
-      {/* Main Footer Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* About Section */}
+    <footer className="bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 pt-16 pb-8 relative">
+      {/* Background decorative elements */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 -left-32 w-64 h-64 bg-blue-50 dark:bg-blue-900/30 rounded-full opacity-20 blur-3xl"></div>
+        <div className="absolute bottom-1/3 -right-32 w-80 h-80 bg-purple-50 dark:bg-purple-900/30 rounded-full opacity-20 blur-3xl"></div>
+      </div>
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+          {/* About */}
           <div className="space-y-4">
-            <h3 className="text-2xl font-bold text-white mb-6">VolunteerHub</h3>
-            <p className="text-gray-400 leading-relaxed">
-              Connecting passionate volunteers with meaningful opportunities. 
-              Making a difference in communities, one helping hand at a time.
+            <div className="flex items-center">
+              <Heart className="h-6 w-6 text-indigo-600 dark:text-indigo-400 mr-2" />
+              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">VolunteerHub</h2>
+            </div>
+            <p className="text-gray-600 dark:text-gray-300">
+              Connecting passionate volunteers with meaningful opportunities to make a difference in communities around the world.
             </p>
-            <div className="flex space-x-4 pt-4">
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+            <div className="flex space-x-4 pt-2">
+              <a href="https://facebook.com" className="text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-300">
                 <Facebook className="h-5 w-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              <a href="https://twitter.com" className="text-gray-400 hover:text-blue-400 transition-colors duration-300">
                 <Twitter className="h-5 w-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              <a href="https://instagram.com" className="text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 transition-colors duration-300">
                 <Instagram className="h-5 w-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              <a href="https://linkedin.com" className="text-gray-400 hover:text-blue-700 dark:hover:text-blue-500 transition-colors duration-300">
                 <Linkedin className="h-5 w-5" />
               </a>
             </div>
@@ -32,142 +41,134 @@ const Footer: React.FC = () => {
 
           {/* Quick Links */}
           <div>
-            <h4 className="text-lg font-semibold text-white mb-6">Quick Links</h4>
-            <ul className="space-y-3">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">Quick Links</h3>
+            <ul className="space-y-2">
               <li>
-                <Link to="/opportunities" className="text-gray-400 hover:text-white transition-colors">
+                <Link to="/" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300 flex items-center">
+                  <span className="w-1 h-1 bg-gray-400 dark:bg-gray-500 rounded-full mr-2"></span>
+                  Home
+                </Link>
+              </li>
+              <li>
+                <Link to="/opportunities" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300 flex items-center">
+                  <span className="w-1 h-1 bg-gray-400 dark:bg-gray-500 rounded-full mr-2"></span>
                   Find Opportunities
                 </Link>
               </li>
               <li>
-                <Link to="/events" className="text-gray-400 hover:text-white transition-colors">
-                  Upcoming Events
-                </Link>
-              </li>
-              <li>
-                <Link to="/donate" className="text-gray-400 hover:text-white transition-colors">
-                  Make a Donation
-                </Link>
-              </li>
-              <li>
-                <Link to="/forum" className="text-gray-400 hover:text-white transition-colors">
-                  Community Forum
-                </Link>
-              </li>
-              <li>
-                <Link to="/about" className="text-gray-400 hover:text-white transition-colors">
+                <Link to="/about" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300 flex items-center">
+                  <span className="w-1 h-1 bg-gray-400 dark:bg-gray-500 rounded-full mr-2"></span>
                   About Us
                 </Link>
               </li>
+              <li>
+                <Link to="/blog" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300 flex items-center">
+                  <span className="w-1 h-1 bg-gray-400 dark:bg-gray-500 rounded-full mr-2"></span>
+                  Blog
+                </Link>
+              </li>
+              <li>
+                <Link to="/contact" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300 flex items-center">
+                  <span className="w-1 h-1 bg-gray-400 dark:bg-gray-500 rounded-full mr-2"></span>
+                  Contact
+                </Link>
+              </li>
             </ul>
           </div>
 
-          {/* Volunteer Categories */}
+          {/* Resources */}
           <div>
-            <h4 className="text-lg font-semibold text-white mb-6">Categories</h4>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">Resources</h3>
+            <ul className="space-y-2">
+              <li>
+                <Link to="/faq" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300 flex items-center">
+                  <span className="w-1 h-1 bg-gray-400 dark:bg-gray-500 rounded-full mr-2"></span>
+                  FAQ
+                </Link>
+              </li>
+              <li>
+                <Link to="/privacy" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300 flex items-center">
+                  <span className="w-1 h-1 bg-gray-400 dark:bg-gray-500 rounded-full mr-2"></span>
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link to="/terms" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300 flex items-center">
+                  <span className="w-1 h-1 bg-gray-400 dark:bg-gray-500 rounded-full mr-2"></span>
+                  Terms of Service
+                </Link>
+              </li>
+              <li>
+                <Link to="/volunteer-guide" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300 flex items-center">
+                  <span className="w-1 h-1 bg-gray-400 dark:bg-gray-500 rounded-full mr-2"></span>
+                  Volunteer Guide
+                </Link>
+              </li>
+              <li>
+                <Link to="/organizations" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300 flex items-center">
+                  <span className="w-1 h-1 bg-gray-400 dark:bg-gray-500 rounded-full mr-2"></span>
+                  For Organizations
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Contact */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">Contact Us</h3>
             <ul className="space-y-3">
-              <li>
-                <Link to="/opportunities?category=education" className="text-gray-400 hover:text-white transition-colors">
-                  Education
-                </Link>
+              <li className="flex items-start">
+                <MapPin className="h-5 w-5 text-indigo-600 dark:text-indigo-400 mr-2 mt-0.5" />
+                <span className="text-gray-600 dark:text-gray-300">
+                  123 Volunteer Street, Community City, 10001
+                </span>
               </li>
-              <li>
-                <Link to="/opportunities?category=environment" className="text-gray-400 hover:text-white transition-colors">
-                  Environment
-                </Link>
+              <li className="flex items-center">
+                <Phone className="h-5 w-5 text-indigo-600 dark:text-indigo-400 mr-2" />
+                <a href="tel:+11234567890" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300">
+                  +1 (123) 456-7890
+                </a>
               </li>
-              <li>
-                <Link to="/opportunities?category=healthcare" className="text-gray-400 hover:text-white transition-colors">
-                  Healthcare
-                </Link>
-              </li>
-              <li>
-                <Link to="/opportunities?category=community" className="text-gray-400 hover:text-white transition-colors">
-                  Community Service
-                </Link>
-              </li>
-              <li>
-                <Link to="/opportunities?category=crisis" className="text-gray-400 hover:text-white transition-colors">
-                  Crisis Support
-                </Link>
+              <li className="flex items-center">
+                <Mail className="h-5 w-5 text-indigo-600 dark:text-indigo-400 mr-2" />
+                <a href="mailto:info@volunteerhub.com" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300">
+                  info@volunteerhub.com
+                </a>
               </li>
             </ul>
-          </div>
-
-          {/* Contact Information */}
-          <div>
-            <h4 className="text-lg font-semibold text-white mb-6">Contact Us</h4>
-            <div className="space-y-4">
-              <div className="flex items-center">
-                <Mail className="h-5 w-5 mr-3 text-blue-400" />
-                <a href="mailto:contact@volunteerhub.com" className="text-gray-400 hover:text-white transition-colors">
-                  contact@volunteerhub.com
-                </a>
-              </div>
-              <div className="flex items-center">
-                <Phone className="h-5 w-5 mr-3 text-blue-400" />
-                <a href="tel:+1234567890" className="text-gray-400 hover:text-white transition-colors">
-                  (123) 456-7890
-                </a>
-              </div>
-              <div className="flex items-start">
-                <MapPin className="h-5 w-5 mr-3 text-blue-400" />
-                <span className="text-gray-400">
-                  123 Volunteer Street<br />
-                  Community City, ST 12345
-                </span>
-              </div>
-            </div>
           </div>
         </div>
 
-        {/* Newsletter Subscription */}
-        <div className="mt-12 pt-8 border-t border-gray-800">
-          <div className="max-w-md mx-auto text-center">
-            <h5 className="text-lg font-semibold text-white mb-4">Stay Connected</h5>
-            <p className="text-gray-400 mb-4">
-              Subscribe to our newsletter for the latest volunteer opportunities and community updates.
-            </p>
-            <form className="flex gap-2">
+        {/* Newsletter */}
+        <div className="py-8 border-t border-b border-gray-200 dark:border-gray-700 mb-8">
+          <div className="max-w-3xl mx-auto text-center">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Subscribe to Our Newsletter</h3>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">Stay updated with the latest volunteer opportunities and community news.</p>
+            <form className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto">
               <input
                 type="email"
-                placeholder="Enter your email"
-                className="flex-1 px-4 py-2 rounded-md bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-blue-500"
+                placeholder="Your email address"
+                className="flex-grow px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent"
+                required
               />
               <button
                 type="submit"
-                className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+                className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg"
               >
                 Subscribe
               </button>
             </form>
           </div>
         </div>
-      </div>
 
-      {/* Bottom Bar */}
-      <div className="bg-gray-950 py-4">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
-            <div className="mb-4 md:mb-0">
-              © {new Date().getFullYear()} VolunteerHub. All rights reserved.
-            </div>
-            <div className="flex space-x-6">
-              <Link to="/privacy" className="hover:text-white transition-colors">
-                Privacy Policy
-              </Link>
-              <Link to="/terms" className="hover:text-white transition-colors">
-                Terms of Service
-              </Link>
-              <Link to="/cookies" className="hover:text-white transition-colors">
-                Cookie Policy
-              </Link>
-            </div>
-          </div>
+        {/* Copyright */}
+        <div className="text-center text-gray-500 dark:text-gray-400 text-sm">
+          <p>© {currentYear} VolunteerHub. All rights reserved.</p>
+          <p className="mt-2">
+            Made with <Heart className="h-4 w-4 text-red-500 dark:text-red-400 inline mx-1" /> for communities worldwide
+          </p>
         </div>
       </div>
     </footer>
   );
-};
-
-export default Footer;
+}

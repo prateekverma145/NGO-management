@@ -6,7 +6,7 @@ import { toast } from 'react-hot-toast';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-import { MapPin, Navigation, Phone, Clock, Info } from 'lucide-react';
+import { MapPin, Navigation, Phone, Clock, Info, Filter, Search, ChevronDown } from 'lucide-react';
 
 // Fix for default marker icons in React-Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;

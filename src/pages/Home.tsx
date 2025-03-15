@@ -1,11 +1,12 @@
-import { ArrowRight, CheckCircle, Search, MapPin, Heart, Award, Users } from 'lucide-react';
+import { ArrowRight, CheckCircle, Search, MapPin, Heart, Award, Users, ChevronDown } from 'lucide-react';
 import OpportunityCard from '../components/OpportunityCard';
 import Button from '../components/Button';
 import FeaturedOpportunities from '../components/FeaturedOpportunities';
 import VolunteerCategories from '../components/VolunteerCategories';
 import LocationMap from '../components/LocationMap';
 import { Link } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import { cn } from '../lib/utils';
 
 const successStories = [
   {
@@ -34,15 +35,113 @@ const successStories = [
   }
 ];
 
+const impactStats = [
+  { 
+    id: 1, 
+    icon: <Users className="h-8 w-8 text-white" />, 
+    value: "10,000+", 
+    label: "Active Volunteers",
+    startValue: 0,
+    endValue: 10000,
+    prefix: "",
+    suffix: "+"
+  },
+  { 
+    id: 2, 
+    icon: <Heart className="h-8 w-8 text-white" />, 
+    value: "500+", 
+    label: "Partner Organizations",
+    startValue: 0,
+    endValue: 500,
+    prefix: "",
+    suffix: "+"
+  },
+  { 
+    id: 3, 
+    icon: <Award className="h-8 w-8 text-white" />, 
+    value: "50,000+", 
+    label: "Hours Contributed",
+    startValue: 0,
+    endValue: 50000,
+    prefix: "",
+    suffix: "+"
+  }
+];
+
+// CountUp component for animated statistics
+function CountUp({ start = 0, end = 100, duration = 2, prefix = '', suffix = '' }) {
+  const [count, setCount] = useState(start);
+  const countRef = useRef(start);
+  const stepRef = useRef(1);
+  const timeRef = useRef(Math.floor(duration * 1000 / (end - start)));
+
+  useEffect(() => {
+    countRef.current = start;
+    const target = end;
+    const step = Math.ceil((target - start) / 30);
+    stepRef.current = step;
+    
+    const timer = setInterval(() => {
+      if (countRef.current + step >= target) {
+        setCount(target);
+        clearInterval(timer);
+      } else {
+        countRef.current += step;
+        setCount(countRef.current);
+      }
+    }, timeRef.current);
+    
+    return () => clearInterval(timer);
+  }, [start, end, duration]);
+
+  return <>{prefix}{Math.floor(count).toLocaleString()}{suffix}</>;
+}
+
 export default function Home() {
   const [scrolled, setScrolled] = useState(false);
+  const [animatedStats, setAnimatedStats] = useState<{[key: string]: boolean}>({});
+  const statsRef = useRef<HTMLDivElement>(null);
+  const howItWorksRef = useRef<HTMLDivElement>(null);
+  const successStoriesRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 50);
+      
+      // Check if stats section is in view
+      if (statsRef.current) {
+        const rect = statsRef.current.getBoundingClientRect();
+        if (rect.top < window.innerHeight && rect.bottom >= 0) {
+          setAnimatedStats(prev => ({...prev, stats: true}));
+        }
+      }
     };
+    
+    // Set up intersection observer for animations
+    const observerOptions = {
+      root: null,
+      rootMargin: '0px',
+      threshold: 0.1
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('animate-fadeIn');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, observerOptions);
+    
+    // Observe elements for animation
+    const animatedElements = document.querySelectorAll('.animate-on-scroll');
+    animatedElements.forEach(el => observer.observe(el));
+    
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      observer.disconnect();
+    };
   }, []);
 
   return (
@@ -51,28 +150,30 @@ export default function Home() {
       <div
         className="relative bg-cover bg-center py-40 md:py-52"
         style={{
-          backgroundImage: 'linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65)), url("https://images.unsplash.com/photo-1559027615-cd4628902d4a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80")',
+          backgroundImage: 'linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("https://images.unsplash.com/photo-1559027615-cd4628902d4a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80")',
           backgroundAttachment: 'fixed'
         }}
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-900/30 to-purple-900/30"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-900/40 to-purple-900/40"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <div className="animate-fadeIn">
             <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-6xl md:text-7xl drop-shadow-lg">
               <span className="block">Make a Difference</span>
-              <span className="block text-blue-300">In Your Community</span>
+              <span className="block bg-clip-text text-transparent bg-gradient-to-r from-blue-300 to-purple-300">In Your Community</span>
             </h1>
             <p className="mt-6 max-w-2xl mx-auto text-xl text-gray-200 leading-relaxed">
               Connect with meaningful volunteer opportunities and create positive change in your area.
             </p>
             <div className="mt-10 max-w-xl mx-auto">
-              <div className="flex items-center bg-white/95 backdrop-blur-sm rounded-full p-1.5 shadow-xl">
+              <div className="flex  invisible items-center bg-white/10 backdrop-blur-md rounded-full p-1.5 shadow-xl border border-white/20">
                 <input
                   type="text"
                   placeholder="Search for volunteer opportunities..."
-                  className="flex-1 px-6 py-3 bg-transparent rounded-full focus:outline-none"
+                  className="flex-1 px-6 py-3 bg-transparent rounded-full text-white placeholder-gray-300 focus:outline-none"
                 />
-                <Button className="flex items-center rounded-full px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-md">
+                <Button 
+                  className="flex items-center rounded-full px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 shadow-md"
+                >
                   <Search className="h-5 w-5 mr-2" />
                   Search
                 </Button>
@@ -97,12 +198,12 @@ export default function Home() {
       </div>
 
       {/* Location Map Section */}
-      <section className="py-20 bg-gradient-to-b from-white to-gray-50 relative overflow-hidden">
+      <section className="py-20 bg-gradient-to-b from-white to-gray-50 relative overflow-hidden animate-on-scroll opacity-0">
         <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-white to-transparent"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-800">Find Help Near You</span>
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">Find Help Near You</span>
             </h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
               Discover NGOs, food banks, blood donation centers, and shelters in your area ready to assist you.
@@ -115,7 +216,7 @@ export default function Home() {
       </section>
 
       {/* Impact Stats */}
-      <div className="bg-gradient-to-r from-blue-700 to-blue-900 py-20 relative overflow-hidden">
+      <div ref={statsRef} className="bg-gradient-to-r from-blue-700 to-indigo-900 py-20 relative overflow-hidden animate-on-scroll opacity-0">
         <div className="absolute inset-0 bg-blue-800 opacity-20 mix-blend-multiply"></div>
         <div className="absolute inset-0" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%239C92AC\' fill-opacity=\'0.1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")' }}></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -126,44 +227,47 @@ export default function Home() {
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-8 transform transition-all duration-300 hover:scale-105 hover:bg-white/15">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-500/20 mb-6">
-                <Users className="h-8 w-8 text-white" />
+            {impactStats.map((stat) => (
+              <div 
+                key={stat.id} 
+                className="bg-white/10 backdrop-blur-sm rounded-xl p-8 transform transition-all duration-300 hover:scale-105 hover:bg-white/15 border border-white/10"
+              >
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-blue-500/30 to-indigo-500/30 mb-6">
+                  {stat.icon}
+                </div>
+                <div className="text-5xl font-bold text-white mb-2">
+                  {animatedStats.stats ? (
+                    <CountUp 
+                      start={stat.startValue} 
+                      end={stat.endValue} 
+                      prefix={stat.prefix} 
+                      suffix={stat.suffix} 
+                      duration={2.5} 
+                    />
+                  ) : (
+                    stat.value
+                  )}
+                </div>
+                <div className="text-lg text-blue-100">{stat.label}</div>
               </div>
-              <div className="text-5xl font-bold text-white mb-2">10,000+</div>
-              <div className="text-lg text-blue-100">Active Volunteers</div>
-            </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-8 transform transition-all duration-300 hover:scale-105 hover:bg-white/15">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-500/20 mb-6">
-                <Heart className="h-8 w-8 text-white" />
-              </div>
-              <div className="text-5xl font-bold text-white mb-2">500+</div>
-              <div className="text-lg text-blue-100">Partner Organizations</div>
-            </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-8 transform transition-all duration-300 hover:scale-105 hover:bg-white/15">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-500/20 mb-6">
-                <Award className="h-8 w-8 text-white" />
-              </div>
-              <div className="text-5xl font-bold text-white mb-2">50,000+</div>
-              <div className="text-lg text-blue-100">Hours Contributed</div>
-            </div>
+            ))}
           </div>
         </div>
       </div>
 
       {/* Categories */}
-      <div className="relative py-16">
+      <div className="relative py-16 animate-on-scroll opacity-0">
         <div className="absolute inset-0 bg-gradient-to-b from-gray-50/50 to-white/0 pointer-events-none"></div>
         <VolunteerCategories />
       </div>
 
       {/* How It Works Section */}
-      <section className="py-20 bg-gradient-to-b from-white to-gray-50 relative overflow-hidden">
+      <section ref={howItWorksRef} className="py-20 bg-gradient-to-b from-white to-gray-50 relative overflow-hidden animate-on-scroll opacity-0">
         <div className="absolute top-0 inset-x-0 h-40 bg-gradient-to-b from-white to-transparent"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-800">How It Works</span>
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">How It Works</span>
             </h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
               Getting started is easy. Follow these simple steps to begin your volunteering journey.
@@ -172,8 +276,8 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
             <div className="hidden md:block absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-100 via-blue-300 to-blue-100 transform -translate-y-1/2 z-0"></div>
             <div className="relative z-10">
-              <div className="bg-white rounded-xl shadow-xl p-8 text-center transform transition-all duration-300 hover:scale-105 hover:shadow-2xl">
-                <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-full p-6 w-20 h-20 mx-auto mb-6 flex items-center justify-center shadow-lg">
+              <div className="bg-white rounded-xl shadow-xl p-8 text-center transform transition-all duration-300 hover:scale-105 hover:shadow-2xl border border-gray-100">
+                <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full p-6 w-20 h-20 mx-auto mb-6 flex items-center justify-center shadow-lg">
                   <span className="text-2xl font-bold text-white">1</span>
                 </div>
                 <h3 className="text-xl font-semibold mb-4 text-gray-900">Create Account</h3>
@@ -181,8 +285,8 @@ export default function Home() {
               </div>
             </div>
             <div className="relative z-10">
-              <div className="bg-white rounded-xl shadow-xl p-8 text-center transform transition-all duration-300 hover:scale-105 hover:shadow-2xl">
-                <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-full p-6 w-20 h-20 mx-auto mb-6 flex items-center justify-center shadow-lg">
+              <div className="bg-white rounded-xl shadow-xl p-8 text-center transform transition-all duration-300 hover:scale-105 hover:shadow-2xl border border-gray-100">
+                <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full p-6 w-20 h-20 mx-auto mb-6 flex items-center justify-center shadow-lg">
                   <span className="text-2xl font-bold text-white">2</span>
                 </div>
                 <h3 className="text-xl font-semibold mb-4 text-gray-900">Find Opportunities</h3>
@@ -190,8 +294,8 @@ export default function Home() {
               </div>
             </div>
             <div className="relative z-10">
-              <div className="bg-white rounded-xl shadow-xl p-8 text-center transform transition-all duration-300 hover:scale-105 hover:shadow-2xl">
-                <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-full p-6 w-20 h-20 mx-auto mb-6 flex items-center justify-center shadow-lg">
+              <div className="bg-white rounded-xl shadow-xl p-8 text-center transform transition-all duration-300 hover:scale-105 hover:shadow-2xl border border-gray-100">
+                <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full p-6 w-20 h-20 mx-auto mb-6 flex items-center justify-center shadow-lg">
                   <span className="text-2xl font-bold text-white">3</span>
                 </div>
                 <h3 className="text-xl font-semibold mb-4 text-gray-900">Start Helping</h3>
@@ -203,45 +307,43 @@ export default function Home() {
       </section>
 
       {/* Success Stories */}
-      <section className="py-20 bg-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-gray-50 to-white pointer-events-none h-32"></div>
+      <section ref={successStoriesRef} className="py-20 bg-gradient-to-b from-gray-50 to-white relative overflow-hidden animate-on-scroll opacity-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-800">Success Stories</span>
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">Success Stories</span>
             </h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Real stories from volunteers who have made a difference in their communities.
+              Hear from volunteers who have made a meaningful impact in their communities.
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {successStories.map((story) => (
-              <div key={story.id} className="bg-white rounded-xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
-                <div className="h-56 overflow-hidden relative">
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10"></div>
-                  <img
-                    src={story.image}
-                    alt={story.title}
-                    className="w-full h-full object-cover transition-transform duration-700 hover:scale-110"
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {successStories.map((story, index) => (
+              <div 
+                key={story.id} 
+                className={cn(
+                  "bg-white rounded-xl shadow-xl overflow-hidden transform transition-all duration-300 hover:shadow-2xl border border-gray-100 flex flex-col",
+                  "animate-on-scroll opacity-0"
+                )}
+                style={{ animationDelay: `${index * 150}ms` }}
+              >
+                <div className="relative h-48 overflow-hidden">
+                  <img 
+                    src={story.image} 
+                    alt={story.title} 
+                    className="w-full h-full object-cover transform transition-transform duration-500 hover:scale-110"
                   />
-                  <div className="absolute bottom-4 left-4 z-20">
-                    <p className="text-white font-medium text-sm bg-blue-600 rounded-full px-3 py-1 inline-block">
-                      {story.role}
-                    </p>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+                  <div className="absolute bottom-0 left-0 right-0 p-4">
+                    <h3 className="text-xl font-bold text-white">{story.title}</h3>
                   </div>
                 </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-semibold mb-3 text-gray-900">{story.title}</h3>
-                  <p className="text-gray-600 mb-4 italic leading-relaxed">
-                    "{story.story}"
-                  </p>
-                  <div className="border-t pt-4 flex items-center">
-                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold">
-                      {story.author.charAt(0)}
-                    </div>
-                    <div className="ml-3">
-                      <p className="text-blue-600 font-medium">{story.author}</p>
-                      <p className="text-gray-500 text-sm">{story.role}</p>
+                <div className="p-6 flex-1 flex flex-col">
+                  <p className="text-gray-600 mb-4 flex-1">"{story.story}"</p>
+                  <div className="flex items-center mt-auto">
+                    <div className="flex-1">
+                      <p className="font-semibold text-gray-900">{story.author}</p>
+                      <p className="text-sm text-blue-600">{story.role}</p>
                     </div>
                   </div>
                 </div>
@@ -252,56 +354,84 @@ export default function Home() {
       </section>
 
       {/* Benefits Section */}
-      <section className="py-20 bg-gradient-to-b from-white to-blue-50 relative overflow-hidden">
-        <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-white to-transparent"></div>
+      <section className="py-20 bg-gradient-to-r from-blue-50 to-indigo-50 relative overflow-hidden animate-on-scroll opacity-0">
+        <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-white to-transparent"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-800">Why Volunteer With Us?</span>
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">Why Volunteer With Us</span>
             </h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
               Discover the many benefits of joining our volunteer community.
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {[
-              "Make a meaningful impact in your community",
-              "Develop new skills and gain experience",
-              "Meet like-minded individuals",
-              "Flexible scheduling to fit your lifestyle",
-              "Track your volunteer hours and impact",
-              "Get certificates for your service"
-            ].map((benefit, index) => (
-              <div key={index} className="flex items-center bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                <div className="bg-gradient-to-r from-green-400 to-green-500 rounded-full p-3 mr-4">
-                  <CheckCircle className="h-6 w-6 text-white" />
-                </div>
-                <span className="text-gray-800 font-medium">{benefit}</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg border border-white/50 transform transition-all duration-300 hover:shadow-xl hover:translate-y-[-4px]">
+              <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-4">
+                <Heart className="h-6 w-6 text-blue-600" />
               </div>
-            ))}
+              <h3 className="text-xl font-semibold mb-2 text-gray-900">Make a Difference</h3>
+              <p className="text-gray-600">Create positive change in your community and help those in need.</p>
+            </div>
+            <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg border border-white/50 transform transition-all duration-300 hover:shadow-xl hover:translate-y-[-4px]">
+              <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-4">
+                <Users className="h-6 w-6 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2 text-gray-900">Build Connections</h3>
+              <p className="text-gray-600">Meet like-minded individuals and form meaningful relationships.</p>
+            </div>
+            <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg border border-white/50 transform transition-all duration-300 hover:shadow-xl hover:translate-y-[-4px]">
+              <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-4">
+                <Award className="h-6 w-6 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2 text-gray-900">Gain Experience</h3>
+              <p className="text-gray-600">Develop new skills and enhance your resume with valuable experience.</p>
+            </div>
+            <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg border border-white/50 transform transition-all duration-300 hover:shadow-xl hover:translate-y-[-4px]">
+              <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-4">
+                <CheckCircle className="h-6 w-6 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2 text-gray-900">Personal Growth</h3>
+              <p className="text-gray-600">Boost your confidence and find purpose through helping others.</p>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Call to Action */}
-      <section className="py-20 bg-gradient-to-r from-blue-600 to-blue-800 text-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-blue-700 opacity-20"></div>
-        <div className="absolute inset-0" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23FFFFFF\' fill-opacity=\'0.1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")' }}></div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          <div className="max-w-3xl mx-auto">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
-              Ready to Make a Difference?
-            </h2>
-            <p className="text-xl text-blue-100 mb-10 leading-relaxed">
-              Join thousands of volunteers who are creating positive change in their communities.
-            </p>
-            <Link
-              to="/signup"
-              className="inline-flex items-center px-8 py-4 border-2 border-white text-lg font-medium rounded-full text-white bg-transparent hover:bg-white hover:text-blue-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-            >
-              Get Started
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Link>
+      <section className="py-20 bg-gradient-to-r from-blue-600 to-indigo-700 relative overflow-hidden animate-on-scroll opacity-0">
+        <div className="absolute inset-0 bg-blue-700 opacity-20 mix-blend-multiply"></div>
+        <div className="absolute inset-0" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23FFFFFF\' fill-opacity=\'0.05\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")' }}></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 md:p-12 shadow-2xl border border-white/20">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+              <div>
+                <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Ready to Make an Impact?</h2>
+                <p className="text-lg text-blue-100 mb-6">
+                  Join our community of volunteers today and start making a difference in your area.
+                </p>
+                <div className="flex flex-wrap gap-4">
+                  <Button 
+                    className="px-8 py-3 bg-white text-blue-700 hover:bg-blue-50 rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                  >
+                    Sign Up Now
+                  </Button>
+                  <Button 
+                    variant="outlined"
+                    className="px-8 py-3 bg-transparent border border-white text-white hover:bg-white/10 rounded-full font-medium transition-all duration-300"
+                  >
+                    Learn More
+                  </Button>
+                </div>
+              </div>
+              <div className="hidden md:block">
+                <img 
+                  src="https://images.unsplash.com/photo-1559027615-cd4628902d4a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80" 
+                  alt="Volunteers working together" 
+                  className="rounded-xl shadow-lg transform -rotate-2 hover:rotate-0 transition-transform duration-500"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </section>

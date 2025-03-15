@@ -7,7 +7,7 @@ export const featuredOpportunities: Opportunity[] = [
     organization: "Local Food Bank",
     location: "Downtown Community Center",
     date: "March 15, 2024",
-    image: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+    image: "https://images.unsplash.com/photo-1593113630400-ea4288922497?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1350&q=85",
     category: "Food & Hunger",
     volunteers: 25,
     description: "Help distribute food to families in need in our community."
@@ -18,7 +18,7 @@ export const featuredOpportunities: Opportunity[] = [
     organization: "Ocean Guardians",
     location: "Sunset Beach",
     date: "March 20, 2024",
-    image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+    image: "https://images.unsplash.com/photo-1542831371-29b0f74f9713?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1350&q=85",
     category: "Environment",
     volunteers: 50,
     description: "Join us in keeping our beaches clean and safe for wildlife."
@@ -29,7 +29,7 @@ export const featuredOpportunities: Opportunity[] = [
     organization: "City Library",
     location: "Public Library Main Branch",
     date: "March 22, 2024",
-    image: "https://images.unsplash.com/photo-1524779709304-40b5a3560c60?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+    image: "https://images.unsplash.com/photo-1512820790803-83ca734da794?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1350&q=85",
     category: "Education",
     volunteers: 20,
     description: "Help young children develop their reading skills."
