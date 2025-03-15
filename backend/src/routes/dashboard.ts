@@ -7,7 +7,9 @@ import mongoose from 'mongoose';
 import {
     getDashboardStats as getDashboardStatsController,
     getDonationHistory as getDonationHistoryController,
-    getEventHistory as getEventHistoryController
+    getEventHistory as getEventHistoryController,
+    getVolunteerDashboard,
+    getNGODashboard
   } from '../controllers/dashboardController';
   
 
@@ -174,5 +176,7 @@ const getEventHistory = async (req: AuthRequest, res: Response) => {
 router.get('/stats', auth, getDashboardStatsController);
 router.get('/donations/history', auth, getDonationHistoryController);
 router.get('/events/history', auth, getEventHistoryController);
+router.get('/volunteer', auth, getVolunteerDashboard);
+router.get('/ngo', auth, getNGODashboard);
 
 export default router;

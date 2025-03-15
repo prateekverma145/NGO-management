@@ -17,9 +17,11 @@ declare global {
     }
   }
 }
+
 export interface AuthRequest extends Request {
-  user?: any;
+  user?: UserPayload;
 }
+
 export const auth = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const token = req.header('Authorization')?.replace('Bearer ', '');
@@ -35,7 +37,13 @@ export const auth = async (req: AuthRequest, res: Response, next: NextFunction) 
       throw new Error();
     }
 
-    req.user = user;
+    req.user = {
+      _id: user._id,
+      email: user.email,
+      name: user.name,
+      userType: user.userType
+    };
+    
     next();
   } catch (error) {
     res.status(401).json({
