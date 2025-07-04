@@ -7,4 +7,15 @@ export default defineConfig({
     'process.env': {},
     'process.browser': true,
   },
+  build: {
+    rollupOptions: {
+      external: ['leaflet']
+    }
+  },
+  optimizeDeps: {
+    exclude: ['leaflet']
+  },
+  ssr: {
+    noExternal: ['react-leaflet']
+  }
 });
