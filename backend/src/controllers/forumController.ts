@@ -6,6 +6,9 @@ import mongoose from 'mongoose';
 // Create a new forum post
 export const createForumPost = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    if (!req.user) {
+  return res.status(401).json({ success: false, message: "User not authenticated" });
+}
     const { title, content, relatedOpportunity, tags } = req.body;
 
     const post = new ForumPost({
@@ -157,6 +160,9 @@ export const getForumPostById = async (req: Request, res: Response): Promise<voi
 // Add a reply to a forum post
 export const addReplyToPost = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    if (!req.user) {
+  return res.status(401).json({ success: false, message: "User not authenticated" });
+}
     const postId = req.params.id;
     const { content } = req.body;
 
@@ -229,6 +235,9 @@ export const addReplyToPost = async (req: AuthRequest, res: Response): Promise<v
 // Update a forum post
 export const updateForumPost = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    if (!req.user) {
+  return res.status(401).json({ success: false, message: "User not authenticated" });
+}
     const postId = req.params.id;
     const { title, content, tags } = req.body;
 
