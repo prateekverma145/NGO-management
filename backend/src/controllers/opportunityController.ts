@@ -7,6 +7,9 @@ import mongoose from 'mongoose';
 export const createOpportunity = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     // Check if user is an NGO
+    if (!req.user) {
+  return res.status(401).json({ success: false, message: "User not authenticated" });
+}
     if (req.user.userType !== 'ngo') {
       res.status(403).json({
         success: false,
@@ -145,6 +148,9 @@ export const createOpportunity = async (req: AuthRequest, res: Response): Promis
 export const registerForOpportunity = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     // Check if user is a volunteer
+    if (!req.user) {
+  return res.status(401).json({ success: false, message: "User not authenticated" });
+}
     if (req.user.userType !== 'volunteer') {
       res.status(403).json({
         success: false,
@@ -225,6 +231,9 @@ export const registerForOpportunity = async (req: AuthRequest, res: Response): P
 // Unregister from an opportunity
 export const unregisterFromOpportunity = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    if (!req.user) {
+  return res.status(401).json({ success: false, message: "User not authenticated" });
+}
     const opportunityId = req.params.id;
     const userId = new mongoose.Types.ObjectId(req.user._id);
 
@@ -269,6 +278,9 @@ export const unregisterFromOpportunity = async (req: AuthRequest, res: Response)
 export const getAllOpportunities = async (req: Request, res: Response): Promise<void> => {
   try {
     // Only show open opportunities with deadlines in the future
+    if (!req.user) {
+  return res.status(401).json({ success: false, message: "User not authenticated" });
+}
     const currentDate = new Date();
     
     const opportunities = await Opportunity.find({
@@ -295,6 +307,9 @@ export const getAllOpportunities = async (req: Request, res: Response): Promise<
 // Get opportunities created by the logged-in user
 export const getMyOpportunities = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    if (!req.user) {
+  return res.status(401).json({ success: false, message: "User not authenticated" });
+}
     const opportunities = await Opportunity.find({ createdBy: req.user._id })
       .populate('registeredVolunteers', 'name email')
       .sort({ createdAt: -1 });
@@ -337,6 +352,9 @@ export const getRegisteredOpportunities = async (req: AuthRequest, res: Response
 // Get single opportunity details
 export const getOpportunityById = async (req: Request, res: Response): Promise<void> => {
   try {
+    if (!req.user) {
+  return res.status(401).json({ success: false, message: "User not authenticated" });
+}
     const opportunity = await Opportunity.findById(req.params.id)
       .populate('createdBy', 'name email organizationName')
       .populate('registeredVolunteers', 'name email');
