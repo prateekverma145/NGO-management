@@ -89,15 +89,16 @@ export const createDonation = async (req: AuthRequest, res: Response): Promise<v
  * @route GET /api/donations/history
  * @access Private (Volunteer only)
  */
-export const getDonationHistory = async (req: AuthRequest, res: Response) => {
+export const getDonationHistory = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const userId = req.user?._id;
     
     if (!userId) {
-      return res.status(401).json({
+       res.status(401).json({
         success: false,
         message: 'User not authenticated'
       });
+      return;
     }
     
     // Check if user is a volunteer
@@ -113,16 +114,16 @@ export const getDonationHistory = async (req: AuthRequest, res: Response) => {
       .populate('recipientId', 'name organizationName description')
       .sort({ createdAt: -1 });
     
-    return res.status(200).json({
+     res.status(200).json({
       success: true,
       donations
-    });
+    });return;
   } catch (error) {
     console.error('Error fetching donation history:', error);
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
       message: 'Server error while fetching donation history'
-    });
+    });return;
   }
 };
 
@@ -286,5 +287,6 @@ export const getNGOList = async (req: AuthRequest, res: Response): Promise<void>
       message: 'Error fetching NGO list',
       error: error instanceof Error ? error.message : 'Unknown error'
     });
+    return;
   }
 }; 
