@@ -36,6 +36,11 @@ function App() {
       document.documentElement.classList.add('dark');
     }
   }, []);
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_API_BASE_URL}/health`) // 👈 ping backend
+      .then((res) => console.log("Backend awake:", res.status))
+      .catch((err) => console.error("Backend ping failed", err));
+  }, []);
 
   return (
     <AuthProvider>
