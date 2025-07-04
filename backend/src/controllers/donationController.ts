@@ -103,10 +103,10 @@ export const getDonationHistory = async (req: AuthRequest, res: Response): Promi
     
     // Check if user is a volunteer
     if (req.user?.userType !== 'volunteer') {
-      return res.status(403).json({
+      res.status(403).json({
         success: false,
         message: 'Access denied. Only volunteers can view their donation history'
-      });
+      });return ;
     }
     
     // Find all donations made by this user
