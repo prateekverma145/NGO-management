@@ -168,7 +168,7 @@ const Events: React.FC = () => {
   const fetchEvents = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:5000/api/events');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/events`);
       if (!response.ok) {
         throw new Error('Failed to fetch events');
       }
@@ -211,7 +211,7 @@ const Events: React.FC = () => {
     if (!token || !user) return;
     
     try {
-      const response = await fetch('http://localhost:5000/api/users/notification-preferences', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/notification-preferences`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -254,7 +254,7 @@ const Events: React.FC = () => {
       ));
       
       // Send request to backend
-      const response = await fetch('http://localhost:5000/api/users/notification-preferences', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/notification-preferences`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -307,7 +307,7 @@ const Events: React.FC = () => {
     };
 
     try {
-      const response = await fetch(`http://localhost:5000/api/events/register`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/events/register`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -343,7 +343,7 @@ const Events: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/events/${eventId}/unregister`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/events/${eventId}/unregister`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -404,7 +404,7 @@ const Events: React.FC = () => {
                   }
                   
                   try {
-                    const response = await fetch('http://localhost:5000/api/notifications/request-digest', {
+                    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/notifications/request-digest`, {
                       method: 'POST',
                       headers: {
                         'Authorization': `Bearer ${token}`,
@@ -436,7 +436,7 @@ const Events: React.FC = () => {
                   }
                   
                   try {
-                    const response = await fetch('http://localhost:5000/api/notifications/request-today-reminders', {
+                    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/notifications/request-today-reminders`, {
                       method: 'POST',
                       headers: {
                         'Authorization': `Bearer ${token}`,

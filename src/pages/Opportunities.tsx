@@ -95,7 +95,7 @@ const Opportunities: React.FC = () => {
 
   const fetchOpportunities = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/opportunities', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/opportunities`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -122,7 +122,7 @@ const Opportunities: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/opportunities/register/${opportunityId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/opportunities/register/${opportunityId}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

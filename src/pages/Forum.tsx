@@ -56,7 +56,7 @@ const Forum: React.FC = () => {
   const fetchPosts = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:5000/api/forum');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
@@ -83,7 +83,7 @@ const Forum: React.FC = () => {
 
   const fetchOpportunities = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/opportunities', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/opportunities`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -121,7 +121,7 @@ const Forum: React.FC = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/forum', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

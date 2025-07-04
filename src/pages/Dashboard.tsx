@@ -29,8 +29,8 @@ const Dashboard: React.FC = () => {
 
       // Determine which dashboard to fetch based on user type
       const endpoint = user?.userType === 'ngo' 
-        ? 'http://localhost:5000/api/dashboard/ngo' 
-        : 'http://localhost:5000/api/dashboard/volunteer';
+        ? `${import.meta.env.VITE_API_BASE_URL}/api/dashboard/ngo` 
+        : `${import.meta.env.VITE_API_BASE_URL}/api/dashboard/volunteer`;
 
       const response = await fetch(endpoint, {
         headers: {

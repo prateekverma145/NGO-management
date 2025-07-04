@@ -25,7 +25,7 @@ const CreateOpportunityForm: React.FC = () => {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:5000/api/opportunities', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/opportunities`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

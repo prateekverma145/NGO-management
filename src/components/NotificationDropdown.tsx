@@ -58,7 +58,7 @@ const NotificationDropdown: React.FC = () => {
     
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/api/notifications', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/notifications`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -80,7 +80,7 @@ const NotificationDropdown: React.FC = () => {
     if (!token) return;
     
     try {
-      const response = await fetch(`http://localhost:5000/api/notifications/${id}/read`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/notifications/${id}/read`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -103,7 +103,7 @@ const NotificationDropdown: React.FC = () => {
     if (!token) return;
     
     try {
-      const response = await fetch('http://localhost:5000/api/notifications/read-all', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/notifications/read-all`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`

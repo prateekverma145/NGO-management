@@ -37,7 +37,7 @@ const EventDetails: React.FC = () => {
   const fetchEventDetails = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:5000/api/events/${id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/events/${id}`, {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {}
       });
 
@@ -79,7 +79,7 @@ const EventDetails: React.FC = () => {
     };
 
     try {
-      const response = await fetch(`http://localhost:5000/api/events/register`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/events/register`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -112,7 +112,7 @@ const EventDetails: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/events/${event._id}/unregister`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/events/${event._id}/unregister`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

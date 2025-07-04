@@ -95,7 +95,7 @@ const Donate: React.FC = () => {
       
       setLoadingNGOs(true);
       try {
-        const response = await fetch('http://localhost:5000/api/donations/ngos', {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/donations/ngos`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -162,7 +162,7 @@ const Donate: React.FC = () => {
         recipientId: selectedNGO
       };
 
-      const response = await fetch('http://localhost:5000/api/donations/create', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/donations/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

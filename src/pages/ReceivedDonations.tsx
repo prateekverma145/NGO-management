@@ -113,7 +113,7 @@ const ReceivedDonations: React.FC = () => {
     
     setLoading(true);
     try {
-      let url = `http://localhost:5000/api/donations/received?page=${page}&limit=${limit}&sortBy=${sortBy}&sortOrder=${sortOrder}`;
+      let url = `${import.meta.env.VITE_API_BASE_URL}/api/donations/received?page=${page}&limit=${limit}&sortBy=${sortBy}&sortOrder=${sortOrder}`;
       
       if (startDate && endDate) {
         url += `&startDate=${startDate}&endDate=${endDate}`;

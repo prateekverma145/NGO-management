@@ -61,7 +61,7 @@ const ForumPost: React.FC = () => {
   const fetchPost = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:5000/api/forum/${id}`);
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/${id}`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
@@ -105,7 +105,7 @@ const ForumPost: React.FC = () => {
 
     try {
       setSubmitting(true);
-      const response = await fetch(`http://localhost:5000/api/forum/${id}/reply`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/${id}/reply`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -146,7 +146,7 @@ const ForumPost: React.FC = () => {
 
     try {
       setSubmitting(true);
-      const response = await fetch(`http://localhost:5000/api/forum/${id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
