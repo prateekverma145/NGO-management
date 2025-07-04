@@ -1,14 +1,14 @@
 import { Response, NextFunction } from 'express';
 import { AuthRequest } from './auth';
 
-export const validateDonation = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const validateDonation = (req: AuthRequest, res: Response, next: NextFunction):void => {
   const { amount, cause, paymentMethod, recipientId } = req.body;
 
   if (!amount || amount <= 0) {
-    return res.status(400).json({
+     res.status(400).json({
       success: false,
       message: 'Invalid donation amount'
-    });
+    });return;
   }
 
   const validCauses = ['education', 'healthcare', 'environment', 'elderly', 'disaster','other','health camp','cleanliness drive'];
