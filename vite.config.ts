@@ -1,21 +1,10 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  define: {
-    'process.env': {},
-    'process.browser': true,
+  server: {
+    host: '0.0.0.0',                  // 👈 necessary for Render
+    port: parseInt(process.env.PORT) || 5173,  // 👈 use Render's port
   },
-  build: {
-    rollupOptions: {
-      external: ['leaflet']
-    }
-  },
-  optimizeDeps: {
-    exclude: ['leaflet']
-  },
-  ssr: {
-    noExternal: ['react-leaflet']
-  }
-});
+})
