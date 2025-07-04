@@ -25,6 +25,9 @@ interface DashboardResponse {
 // Update return type to Promise<void>
 export const getDashboardStats = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    if (!req.user) {
+  return res.status(401).json({ success: false, message: "User not authenticated" });
+}
     if (!req.user?._id) {
       res.status(401).json({
         success: false,
@@ -100,6 +103,9 @@ export const getDashboardStats = async (req: AuthRequest, res: Response): Promis
 
 export const getDonationHistory = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    if (!req.user) {
+  return res.status(401).json({ success: false, message: "User not authenticated" });
+}
     const userId = new mongoose.Types.ObjectId(req.user._id);
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
@@ -164,6 +170,9 @@ export const getDonationHistory = async (req: AuthRequest, res: Response): Promi
 
 export const getEventHistory = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    if (!req.user) {
+  return res.status(401).json({ success: false, message: "User not authenticated" });
+}
     const userId = new mongoose.Types.ObjectId(req.user._id);
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
