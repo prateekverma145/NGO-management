@@ -25,6 +25,8 @@ app.use(cors());
 app.use(express.json());
 
 // Log all requests
+app.get('/health', (req:Request, res:Response) => res.send('OK'));
+
 app.use((req, res, next) => {
     console.log(`${req.method} ${req.path}`, req.body);
     next();
