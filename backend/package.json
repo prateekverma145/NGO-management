@@ -14,7 +14,7 @@
   "license": "ISC",
   "dependencies": {
     "@types/nodemailer": "^6.4.17",
-    "@types/node-cron": "^3.0.11"
+    "@types/node-cron": "^3.0.11",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
