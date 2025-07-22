@@ -1,16 +1,10 @@
 [build]
   command = "npm run build"
-  publish = "dist"
+  publish = "dist"  # Vite builds to 'dist' directory
 
 [build.environment]
   NODE_VERSION = "18"
   VITE_API_BASE_URL = "https://ngo-management-rg38.onrender.com"
-
-# Explicitly disable auto-plugin detection
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
-  [plugins.inputs]
-    disable = true
 
 [dev]
   command = "npm run dev"
