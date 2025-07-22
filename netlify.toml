@@ -1,0 +1,13 @@
+[build]
+  command = "npm run build"
+  publish = "build"
+
+[functions]
+  directory = ".netlify/functions"
+
+[dev]
+  command = "npm run dev"
+  
+[build.environment]
+  NODE_VERSION = "18"
+  VITE_API_BASE_URL = "https://ngo-management-rg38.onrender.com"
